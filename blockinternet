@@ -1,0 +1,29 @@
+#!/bin/sh
+
+ACTION=$1
+
+if [ -z $ACTION ]; then
+  D=`date "+%A"`
+  H=`date "+%H"`
+  M=`date "+%M"`
+  if [ $D = "Sunday" -o $H -lt 6 -o $H -gt 14 ]; then
+    ACTION="off"
+  elif [ $H -eq 6 -a $M -lt 30 ]; then
+    ACTION="off"
+  elif [ $H -eq 14 -a $M -ge 30 ]; then
+    ACTION="off"
+  else
+    ACTION="on"
+  fi
+fi
+
+echo "`date` $ACTION" >> /Library/LaunchDaemons/blockinternet.log
+
+if [ $ACTION = "on" ]; then
+  pfctl -e -f `dirname $0`/blockinternet.conf
+elif [ $ACTION = "off" ]; then
+  pfctl -d
+else
+  echo "Usage: blockinternet [on|off]"
+  exit 1
+fi
